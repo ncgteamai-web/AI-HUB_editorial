@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>AI 바이브앱 HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+/*
+ * AI 바이브앱 HUB — 단독 HTML 파일
+ * 카테고리: DESIGN=오렌지옐로우 / QUALITY=레디시핑크 / PROCESS=퍼플 / EXPAND=그린 / TEAM=진파랑
+ * JSON 내보내기: 전체 탭(업무/개인/진행중/실험실) items + specs 포함
+ * 탭 이동: 진행중→업무/개인/실험실, 실험실→업무/개인/진행중 (아이콘 드롭다운)
+ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Separate track: low-chroma warm beige scheme. Existing tag and tech colors remain unchanged. */
+:root {
+  --bg: #faf8f3; --surface: #f4f0e9; --surface-hover: #ede7de; --card-bg: #fff; --border: #e5ded4;
+  --text: #1c1c1e; --text-muted: #7a7570;
+  --radius: 12px;
+  --shadow: 0 2px 10px rgba(66,52,35,0.055);
+  --shadow-hover: 0 10px 26px rgba(66,52,35,0.11);
+  --design-bg:#fff3d6; --design-text:#8a5a00; --design-border:#f5c84a;
+  --quality-bg:#fde8ec; --quality-text:#b02040; --quality-border:#f4a0b0;
+  --process-bg:#ede8f8; --process-text:#5b2fa0; --process-border:#c4aeed;
+  --expand-bg:#e4f5ec;  --expand-text:#1a6b3c;  --expand-border:#8fd4ae;
+  --team-bg:#ddeeff;    --team-text:#0a3a7a;    --team-border:#6aabee;
+}
+body { font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; background:linear-gradient(145deg,#fdfcf9 0%,#f7f4ee 100%); color:var(--text); min-height:100vh; }
+
+/* HEADER */
+header { position:sticky; top:0; z-index:20; background:rgba(253,252,249,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); box-shadow:0 1px 0 rgba(66,52,35,.04); }
+.header-inner { max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; gap:10px; height:52px; }
+.logo-box { width:28px; height:28px; border-radius:8px; background:#1c1c1e; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.site-title { font-family:'Space Grotesk','Noto Sans KR',sans-serif; font-weight:700; font-size:17px; letter-spacing:-.3px; }
+.header-spacer { flex:1; }
+.public-export-btn { display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:0 11px; border:1px solid #1c1c1e; border-radius:8px; background:#1c1c1e; color:#fff; font:700 11px 'Noto Sans KR',sans-serif; letter-spacing:.01em; cursor:pointer; transition:transform .12s,background .12s; }
+.public-export-btn:hover { background:#373737; }
+.public-export-btn:active { transform:scale(.97); }
+
+/* EDITORIAL MESSAGE ROW — 탭 메뉴를 대체하는 고정 설명 행. 나머지 보드 스타일은 원본을 유지한다. */
+.tab-nav-wrap { position:sticky; top:52px; z-index:10; min-height:74px; display:flex; align-items:center; background:rgba(247,244,238,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); }
+.editorial-message { width:100%; max-width:1400px; margin:0 auto; padding:16px 24px; color:var(--text); line-height:1.65; }
+.editorial-message strong { display:block; font-size:14px; font-weight:800; letter-spacing:-.02em; }
+.editorial-message span { display:block; color:var(--text-muted); font-size:12px; font-weight:500; }
+
+/* MAIN */
+main { max-width:1400px; margin:0 auto; padding:24px; }
+
+/* CATEGORY BAR */
+.cat-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid rgba(110,90,64,.09); }
+.cat-label { font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:.12em; text-transform:uppercase; margin-right:4px; }
+.cat-btn { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.05em; cursor:pointer; border:1.5px solid transparent; transition:all .15s; user-select:none; background:none; font-family:inherit; }
+.cat-btn.all { background:#ebebeb; color:#555; }
+.cat-btn.all.active { background:#1c1c1e; color:#fff; border-color:#1c1c1e; }
+.cat-btn.design  { background:var(--design-bg);  color:var(--design-text);  border-color:var(--design-border); }
+.cat-btn.quality { background:var(--quality-bg); color:var(--quality-text); border-color:var(--quality-border); }
+.cat-btn.process { background:var(--process-bg); color:var(--process-text); border-color:var(--process-border); }
+.cat-btn.expand  { background:var(--expand-bg);  color:var(--expand-text);  border-color:var(--expand-border); }
+.cat-btn.team    { background:var(--team-bg);    color:var(--team-text);    border-color:var(--team-border); }
+.cat-btn.design.active  { background:#d4820a; color:#fff; border-color:#d4820a; }
+.cat-btn.quality.active { background:#c02040; color:#fff; border-color:#c02040; }
+.cat-btn.process.active { background:#6c3bbf; color:#fff; border-color:#6c3bbf; }
+.cat-btn.expand.active  { background:#1e7d46; color:#fff; border-color:#1e7d46; }
+.cat-btn.team.active    { background:#0a3a7a; color:#fff; border-color:#0a3a7a; }
+.spacer { flex:1; }
+.json-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:8px; font-size:12px; font-weight:600; color:var(--text-muted); background:transparent; border:1px solid var(--border); cursor:pointer; transition:color .12s,background .12s; font-family:inherit; }
+.json-btn:hover { color:var(--text); background:var(--surface); }
+
+/* BOARD THUMBNAILS — all thumbnails are horizontal (16:9). */
+/* GRID */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+
+/* APP CARD */
+.app-card { position:relative; background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:12px; min-height:148px; display:flex; flex-direction:column; cursor:pointer; transition:transform .18s cubic-bezier(.23,1,.32,1),box-shadow .18s cubic-bezier(.23,1,.32,1); user-select:none; }
+.app-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+.app-card:active { transform:scale(.98); }
+.app-card.dragging { opacity:.4; transform:scale(.97); }
+.app-card.drag-over { outline:2px dashed #888; outline-offset:2px; }
+.card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:4px; }
+.card-actions { display:flex; align-items:center; justify-content:flex-end; gap:3px; flex-shrink:0; padding:2px; border:1px solid rgba(73,57,38,.08); border-radius:8px; background:rgba(250,248,243,.82); }
+.card-action-btn { width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:none; background:none; cursor:pointer; border-radius:6px; color:var(--text-muted); transition:color .12s,background .12s; font-family:inherit; }
+.card-action-btn:hover { background:var(--surface); color:var(--text); }
+.card-action-btn.spec-btn.has-spec { color:#3b82f6; }
+.card-action-btn.spec-btn.has-spec:hover { background:#eff6ff; color:#2563eb; }
+.card-action-btn.del-btn:hover { background:#fef2f2; color:#dc2626; }
+.card-action-btn.move-btn:hover { background:#f0fdf4; color:#16a34a; }
+.card-title { font-family:'Space Grotesk','Noto Sans KR',sans-serif; font-weight:700; font-size:15px; color:var(--text); line-height:1.3; margin-top:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.card-desc { font-size:12px; color:var(--text-muted); line-height:1.6; flex:1; margin-top:8px; white-space:pre-line; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.spec-dot { position:absolute; bottom:10px; left:12px; width:6px; height:6px; border-radius:50%; background:#60a5fa; }
+.drag-hint { position:absolute; bottom:8px; right:8px; color:var(--border); opacity:.5; pointer-events:none; }
+.project-thumb { position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:9px; background:linear-gradient(135deg,#eee8df,#f8f6f1); border:1px solid rgba(73,57,38,.08); margin:-2px -2px 10px; display:flex; align-items:center; justify-content:center; color:#9a8f82; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.project-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.project-thumb::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(140deg,rgba(255,255,255,.22),transparent 45%); }
+.preview-chip { display:inline-flex; align-items:center; height:20px; padding:0 7px; border-radius:999px; color:var(--text-muted); background:var(--surface); font-size:9px; font-weight:700; letter-spacing:.07em; }
+
+/* Layout study 01: compact gallery, three-up on wide screens. */
+body.layout-gallery .grid { grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+body.layout-gallery .app-card { padding:13px; min-height:unset; }
+body.layout-gallery .card-desc { -webkit-line-clamp:3; }
+
+/* Layout study 02: editorial, two larger feature cards. */
+body.layout-editorial .grid { grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:22px; }
+body.layout-editorial .app-card { padding:16px; min-height:unset; }
+body.layout-editorial .project-thumb { margin:-4px -4px 14px; border-radius:10px; }
+body.layout-editorial .card-title { font-size:18px; margin-top:12px; }
+body.layout-editorial .card-desc { font-size:13px; -webkit-line-clamp:3; }
+
+/* Layout study 03: horizontal split card, landscape image occupies the left panel. */
+body.layout-split .grid { grid-template-columns:repeat(auto-fit,minmax(500px,1fr)); gap:20px; }
+body.layout-split .app-card { display:grid; grid-template-columns:232px minmax(0,1fr); grid-template-areas:'thumb header' 'thumb title' 'thumb description'; grid-template-rows:32px auto 1fr; column-gap:18px; row-gap:0; min-height:184px; padding:12px; align-items:start; }
+body.layout-split .project-thumb { grid-area:thumb; align-self:center; width:100%; height:auto; min-height:0; aspect-ratio:16/9; margin:0; border-radius:8px; }
+body.layout-split .card-top { grid-area:header; min-height:32px; align-items:center; }
+body.layout-split .card-actions { align-self:start; }
+body.layout-split .card-title { grid-area:title; margin:10px 0 0; font-size:18px; line-height:1.25; }
+body.layout-split .card-desc { grid-area:description; align-self:start; flex:none; margin:8px 0 0; -webkit-line-clamp:3; }
+body.layout-split .drag-hint, body.layout-split .spec-dot { display:none; }
+
+/* MOVE DROPDOWN */
+.move-wrap { position:relative; }
+.move-menu { position:absolute; right:0; top:100%; margin-top:4px; z-index:50; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(28,28,30,.14); padding:4px 0; min-width:110px; }
+.move-menu-title { padding:6px 12px 4px; font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.1em; border-bottom:1px solid var(--border); margin-bottom:2px; }
+.move-menu-item { display:block; width:100%; text-align:left; padding:8px 12px; font-size:13px; font-weight:500; color:var(--text); background:none; border:none; cursor:pointer; font-family:inherit; transition:background .1s; }
+.move-menu-item:hover { background:var(--surface); }
+
+/* ADD CARD */
+.add-card { border:2px dashed #cfc3b3; background:rgba(255,255,255,.46); border-radius:var(--radius); min-height:148px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s,background .15s; }
+.add-card:hover { border-color:#96816a; background:var(--surface); }
+
+/* BADGE */
+.badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:.05em; border:1.5px solid transparent; white-space:nowrap; }
+.badge.design  { background:var(--design-bg);  color:var(--design-text);  border-color:var(--design-border); }
+.badge.quality { background:var(--quality-bg); color:var(--quality-text); border-color:var(--quality-border); }
+.badge.process { background:var(--process-bg); color:var(--process-text); border-color:var(--process-border); }
+.badge.expand  { background:var(--expand-bg);  color:var(--expand-text);  border-color:var(--expand-border); }
+.badge.team    { background:var(--team-bg);    color:var(--team-text);    border-color:var(--team-border); }
+
+.empty-state { text-align:center; padding:40px 0; font-size:13px; color:var(--text-muted); }
+
+/* MODAL */
+.overlay { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; padding:16px; animation:fadeIn .15s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal { background:#fff; border-radius:18px; padding:24px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.18); animation:scaleIn .2s cubic-bezier(.23,1,.32,1); }
+.modal.wide { max-width:540px; }
+@keyframes scaleIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+.modal-title { font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.form-label { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; gap:6px; }
+.form-input,.form-textarea,.form-select { width:100%; padding:8px 10px; font-size:13px; font-family:inherit; border:1px solid var(--border); border-radius:8px; background:#fff; color:var(--text); outline:none; transition:border-color .15s,box-shadow .15s; }
+.form-input:focus,.form-textarea:focus,.form-select:focus { border-color:#888; box-shadow:0 0 0 3px rgba(0,0,0,.06); }
+.form-textarea { resize:vertical; min-height:72px; line-height:1.6; }
+.form-select { appearance:none; cursor:pointer; }
+.thumbnail-picker { position:relative; min-height:156px; overflow:hidden; display:flex; align-items:center; justify-content:center; border:1.5px dashed #c7bcae; border-radius:10px; background:rgba(255,255,255,.58); cursor:pointer; transition:border-color .15s,background .15s,box-shadow .15s; }
+.thumbnail-picker:hover,.thumbnail-picker:focus-visible { border-color:#89745d; background:var(--surface); outline:none; }
+.thumbnail-picker.is-dragging { border-color:#1c1c1e; background:#f6f1e9; box-shadow:0 0 0 3px rgba(110,90,64,.10); }
+.thumbnail-picker img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+#thumbEmpty { display:flex; flex-direction:column; align-items:center; gap:5px; color:var(--text-muted); text-align:center; font-size:12px; }
+#thumbEmpty strong { color:var(--text); font-size:13px; }
+.thumbnail-picker.has-image #thumbEmpty { display:none; }
+.thumbnail-guidance,.thumbnail-status { font-size:11px; line-height:1.5; color:var(--text-muted); }
+.thumbnail-guidance { margin-top:7px; }
+.thumbnail-guidance strong { color:var(--text); }
+.thumbnail-status { min-height:16px; margin-top:3px; }
+.thumbnail-status.is-warning { color:#a05a1d; }
+.thumb-remove { align-self:flex-start; margin-top:5px; padding:3px 0; border:0; background:none; color:#a85038; font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
+.thumb-remove:hover { text-decoration:underline; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; border:none; cursor:pointer; transition:background .12s,transform .1s; }
+.btn:active { transform:scale(.97); }
+.btn-primary { background:#1c1c1e; color:#fff; }
+.btn-primary:hover { background:#333; }
+.btn-primary:disabled { background:#ccc; cursor:not-allowed; }
+.btn-outline { background:transparent; color:var(--text); border:1px solid var(--border); }
+.btn-outline:hover { background:var(--surface); }
+.btn-danger { background:#dc2626; color:#fff; }
+.btn-danger:hover { background:#b91c1c; }
+.btn-ghost { background:transparent; color:var(--text-muted); }
+.btn-ghost:hover { background:var(--surface); color:var(--text); }
+.btn-ghost-danger { background:transparent; color:#dc2626; font-size:12px; }
+.btn-ghost-danger:hover { background:#fef2f2; }
+.modal-footer { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:12px; border-top:1px solid var(--border); }
+.modal-footer-split { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:16px; padding-top:12px; border-top:1px solid var(--border); }
+.app-meta-box { display:flex; align-items:center; gap:12px; background:var(--surface); border-radius:10px; padding:10px 14px; margin-bottom:16px; }
+.app-meta-box .meta-title { font-family:'Space Grotesk','Noto Sans KR',sans-serif; font-weight:700; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.app-meta-box a { color:var(--text-muted); text-decoration:none; flex-shrink:0; transition:color .12s; }
+.app-meta-box a:hover { color:var(--text); }
+.separator { border:none; border-top:1px solid var(--border); margin:12px 0; }
+.confirm-modal { max-width:360px; }
+.confirm-desc { font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:4px; }
+.toast-wrap { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+.toast { background:#1c1c1e; color:#fff; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.2); animation:toastIn .2s ease; pointer-events:none; white-space:nowrap; }
+.toast.error { background:#dc2626; }
+@keyframes toastIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+footer { border-top:1px solid var(--border); padding:14px 24px; text-align:center; font-size:11px; color:var(--text-muted); }
+@media (max-width:768px) { main,.header-inner,.editorial-message { padding-left:16px; padding-right:16px; } main { padding:16px; } body.layout-editorial .grid,body.layout-split .grid { grid-template-columns:1fr; } }
+@media (max-width:560px) { body.layout-split .app-card { display:flex; min-height:unset; } body.layout-split .project-thumb { min-height:0; height:auto; margin:-2px -2px 10px; } }
+@media (max-width:480px) { .grid { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <span class="site-title">AI 바이브앱 HUB</span>
+    <div class="header-spacer"></div>
+    <button class="public-export-btn" id="publicExportBtn" type="button" title="편집 기능을 제외한 공개용 HTML 파일을 만듭니다">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      공개용 내보내기
+    </button>
+  </div>
+</header>
+
+<div class="tab-nav-wrap">
+  <div class="editorial-message" aria-label="바이브앱 HUB 소개">
+    <strong>데일리 뉴스 인포그래픽 제작 과정을 도구로 다시 짰습니다</strong>
+    <span>기획·설계·개발·배포·교육까지 직접, 뉴스디자인팀 23명이 씁니다</span>
+  </div>
+</div>
+
+<main>
+  <div class="cat-bar" id="catBar">
+    <span class="cat-label">CATEGORY</span>
+    <button class="cat-btn all active" data-cat="ALL">ALL</button>
+    <button class="cat-btn design"  data-cat="DESIGN">DESIGN</button>
+    <button class="cat-btn quality" data-cat="QUALITY">QUALITY</button>
+    <button class="cat-btn process" data-cat="PROCESS">PROCESS</button>
+    <button class="cat-btn expand"  data-cat="EXPAND">EXPAND</button>
+    <button class="cat-btn team"    data-cat="TEAM">TEAM</button>
+    <div class="spacer"></div>
+    <button class="json-btn" id="exportBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      내보내기
+    </button>
+    <button class="json-btn" id="importBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      불러오기
+    </button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" />
+  </div>
+  <div class="grid" id="appGrid"></div>
+</main>
+
+<footer>AI 바이브앱 HUB — 내 앱을 한눈에</footer>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- App Form Modal -->
+<div class="overlay" id="formOverlay" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="formModalTitle">새 앱 등록</div>
+    <div class="form-group">
+      <label class="form-label" for="fTitle">타이틀 *</label>
+      <input class="form-input" id="fTitle" type="text" placeholder="앱 이름을 입력하세요" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="fUrl">URL *</label>
+      <input class="form-input" id="fUrl" type="text" placeholder="https://example.com" style="font-family:monospace" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="fDesc">간단 설명</label>
+      <textarea class="form-textarea" id="fDesc" placeholder="앱에 대한 간단한 설명을 입력하세요" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="fThumbFile">대표 썸네일 · 가로형</label>
+      <div class="thumbnail-picker" id="thumbDropZone" role="button" tabindex="0" aria-label="가로형 썸네일 이미지 선택 또는 끌어놓기">
+        <input id="fThumbFile" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+        <img id="thumbPreview" alt="선택한 썸네일 미리보기" hidden />
+        <div id="thumbEmpty">
+          <strong>이미지를 끌어놓거나 더블클릭해 선택하세요.</strong>
+          <span>JPG · PNG · WebP</span>
+        </div>
+      </div>
+      <div class="thumbnail-guidance">권장 비율 <strong>16:9 가로형</strong> · 권장 최소 해상도 <strong>1600 × 900px</strong> · 최대 파일 크기 2MB</div>
+      <div class="thumbnail-status" id="thumbStatus">등록하지 않으면 기본 플레이스홀더가 표시됩니다.</div>
+      <button type="button" class="thumb-remove" id="thumbRemoveBtn" hidden>썸네일 제거</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="fCat">카테고리</label>
+      <select class="form-select" id="fCat">
+        <option value="DESIGN">DESIGN</option>
+        <option value="QUALITY">QUALITY</option>
+        <option value="PROCESS">PROCESS</option>
+        <option value="EXPAND">EXPAND</option>
+        <option value="TEAM">TEAM</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="formCancelBtn">취소</button>
+      <button class="btn btn-primary" id="formSubmitBtn">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tech Spec Modal -->
+<div class="overlay" id="specOverlay" style="display:none">
+  <div class="modal wide">
+    <div class="modal-title" id="specModalTitle">기술 스펙</div>
+    <div class="app-meta-box" id="specAppMeta"></div>
+    <hr class="separator" />
+    <div class="form-group">
+      <label class="form-label" for="sPurpose">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>목적
+      </label>
+      <textarea class="form-textarea" id="sPurpose" placeholder="이 앱의 목적을 입력하세요" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="sFeatures">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><rect x="2" y="3" width="6" height="6"/><rect x="9" y="3" width="6" height="6"/><rect x="16" y="3" width="6" height="6"/><rect x="2" y="10" width="6" height="6"/><rect x="9" y="10" width="6" height="6"/></svg>기능
+      </label>
+      <textarea class="form-textarea" id="sFeatures" placeholder="주요 기능을 입력하세요 (여러 줄 가능)" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="sDeploy">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>배포방식
+      </label>
+      <textarea class="form-textarea" id="sDeploy" placeholder="ex) Vercel CI/CD, Docker + GitHub Actions, 수동 FTP" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="sServer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>서버
+      </label>
+      <input class="form-input" id="sServer" type="text" placeholder="ex) AWS EC2 t3.medium, Vercel, Cloudflare Workers" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="sDb">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>DB
+      </label>
+      <input class="form-input" id="sDb" type="text" placeholder="ex) PostgreSQL 15, Supabase, Firebase Firestore" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="sCost">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.6"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>비용
+      </label>
+      <input class="form-input" id="sCost" type="text" placeholder="ex) 월 $20 (서버) + 무료 (DB)" />
+    </div>
+    <div class="modal-footer-split">
+      <div id="specDeleteArea"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" id="specCancelBtn">닫기</button>
+        <button class="btn btn-primary" id="specSaveBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          저장
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="overlay" id="deleteOverlay" style="display:none">
+  <div class="modal confirm-modal">
+    <div class="modal-title">앱 삭제</div>
+    <p class="confirm-desc" id="deleteDesc"></p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="deleteCancelBtn">취소</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  AI 바이브앱 HUB — 단독 HTML
+//  - JSON 내보내기: 전체 탭(업무/개인/진행중/실험실) items + specs 포함
+//  - JSON 불러오기: tabId 기준으로 각 탭에 자동 할당
+//  - 탭 이동: 진행중→업무/개인/실험실, 실험실→업무/개인/진행중
+// ============================================================
+
+const ITEMS_KEY = 'vibapp-items';
+const SPECS_KEY = 'vibapp-specs';
+
+const TAB_LABELS = { work:'업무', personal:'개인', inprogress:'진행중', lab:'실험실' };
+// 탭별 이동 가능 대상 (업무·개인은 이동 아이콘 없음)
+const MOVE_TARGETS = {
+  inprogress: ['work','personal','lab'],
+  lab: ['work','personal','inprogress'],
+};
+
+let state = {
+  activeTab: 'work',
+  activeCategory: 'ALL',
+  items: loadJSON(ITEMS_KEY, []),
+  specs: loadJSON(SPECS_KEY, {}),
+  draggingId: null,
+  formMode: 'add', formEditId: null,
+  specAppId: null, specHasExisting: false, specDeleteConfirm: false,
+  deleteTargetId: null,
+  openMoveId: null,
+  pendingThumbnail: '',
+};
+
+    // 편집 가능한 Editorial 레이아웃: 불러온 JSON의 실제 데이터를 그대로 표시한다.
+const layoutMode = 'editorial';
+const isLayoutStudy = false;
+document.body.classList.add('layout-preview', `layout-${layoutMode}`);
+document.querySelector('footer').innerHTML = 'AI 바이브앱 HUB · 포트폴리오 레이아웃 Editorial';
+
+function loadJSON(key, fb) { try { return JSON.parse(localStorage.getItem(key)) ?? fb; } catch { return fb; } }
+function persist() {
+  try {
+    localStorage.setItem(ITEMS_KEY, JSON.stringify(state.items));
+    localStorage.setItem(SPECS_KEY, JSON.stringify(state.specs));
+  } catch {
+    showToast('이미지가 너무 커서 저장할 수 없습니다. 2MB 이하 파일을 사용해 주세요.', true);
+  }
+}
+function nanoid() { return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+const VALID_TABS = Object.keys(TAB_LABELS);
+const TAB_ALIASES = { work:'work', '업무':'work', personal:'personal', '개인':'personal', inprogress:'inprogress', 'in-progress':'inprogress', 'in progress':'inprogress', '진행중':'inprogress', lab:'lab', '실험실':'lab' };
+const VALID_CATEGORIES = ['DESIGN','QUALITY','PROCESS','EXPAND','TEAM'];
+
+function safeUrl(value) {
+  const url=String(value||'').trim();
+  if (!url) return '#';
+  if (/^(https?:|\/|#)/i.test(url)) return url;
+  return `https://${url}`;
+}
+function safeThumbnail(value) {
+  const src=String(value||'').trim();
+  if (/^https?:\/\//i.test(src)) return src;
+  if (/^data:image\/(?:png|jpe?g|webp);base64,/i.test(src)) return src;
+  return '';
+}
+function normalizeTabId(value) { return TAB_ALIASES[String(value||'').trim().toLowerCase()] || 'work'; }
+function normalizeCategory(value) {
+  const category=String(value||'DESIGN').trim().toUpperCase();
+  return VALID_CATEGORIES.includes(category) ? category : 'DESIGN';
+}
+function normalizeItems(rawItems) {
+  if (!Array.isArray(rawItems)) return [];
+  const seenIds=new Set();
+  const fallbackOrders={work:0,personal:0,inprogress:0,lab:0};
+  return rawItems.filter(item=>item&&typeof item==='object').map((item,index)=>{
+    const tabId=normalizeTabId(item.tabId ?? item.tab ?? item.section);
+    const suppliedId=String(item.id ?? item.uuid ?? '').trim();
+    const id=suppliedId && !seenIds.has(suppliedId) ? suppliedId : nanoid();
+    seenIds.add(id);
+    const suppliedOrder=Number(item.order);
+    const fallbackOrder=fallbackOrders[tabId]++;
+    return {
+      id,
+      title:String(item.title ?? item.name ?? `앱 ${index+1}`),
+      url:safeUrl(item.url ?? item.link ?? item.href),
+      description:String(item.description ?? item.desc ?? item.summary ?? ''),
+      thumbnail:safeThumbnail(item.thumbnail ?? item.thumb ?? item.image ?? item.cover),
+      category:normalizeCategory(item.category ?? item.cat),
+      tabId,
+      order:Number.isFinite(suppliedOrder) ? suppliedOrder : fallbackOrder,
+      createdAt:Number(item.createdAt) || Date.now(),
+    };
+  });
+}
+
+function syncActiveNavigation() {
+  document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.tab===state.activeTab));
+  document.querySelectorAll('.cat-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.cat===state.activeCategory));
+}
+
+function selectFirstPopulatedTab() {
+  // 탭 메뉴가 없는 단일 보드이므로 불러온 데이터의 원래 tabId와 무관하게 전체를 표시한다.
+  state.activeTab='work';
+  state.activeCategory='ALL';
+  state.openMoveId=null;
+  syncActiveNavigation();
+}
+
+function showToast(msg, isErr) {
+  const el = document.createElement('div');
+  el.className = 'toast'+(isErr?' error':''); el.textContent = msg;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function downloadTextFile(filename, text, type='text/plain;charset=utf-8') {
+  const blob=new Blob([text],{type});
+  const url=URL.createObjectURL(blob);
+  const anchor=document.createElement('a');
+  anchor.href=url;
+  anchor.download=filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+
+function safeJSONStringify(value) {
+  return JSON.stringify(value)
+    .replace(/</g,'\\u003c')
+    .replace(/>/g,'\\u003e')
+    .replace(/&/g,'\\u0026')
+    .replace(/\u2028/g,'\\u2028')
+    .replace(/\u2029/g,'\\u2029');
+}
+
+function buildPublicHTML() {
+  const css=document.querySelector('style').textContent;
+  const publicItems=state.items.map(({id,title,url,description,thumbnail,category,tabId,order})=>({id,title,url,description,thumbnail,category,tabId,order}));
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<meta name="description" content="AI 바이브앱 HUB 포트폴리오" />
+<title>AI 바이브앱 HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>${css}
+body.public-mode .app-card { cursor:pointer; }
+body.public-mode .app-card:focus-visible { outline:3px solid #1c1c1e; outline-offset:3px; }
+</style>
+</head>
+<body class="layout-preview layout-editorial public-mode">
+<header><div class="header-inner"><div class="logo-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><span class="site-title">AI 바이브앱 HUB</span></div></header>
+<div class="tab-nav-wrap"><div class="editorial-message" aria-label="바이브앱 HUB 소개"><strong>데일리 뉴스 인포그래픽 제작 과정을 도구로 다시 짰습니다</strong><span>기획·설계·개발·배포·교육까지 직접, 뉴스디자인팀 23명이 씁니다</span></div></div>
+<main><div class="cat-bar" id="catBar"><span class="cat-label">CATEGORY</span><button class="cat-btn all active" data-cat="ALL" type="button">ALL</button><button class="cat-btn design" data-cat="DESIGN" type="button">DESIGN</button><button class="cat-btn quality" data-cat="QUALITY" type="button">QUALITY</button><button class="cat-btn process" data-cat="PROCESS" type="button">PROCESS</button><button class="cat-btn expand" data-cat="EXPAND" type="button">EXPAND</button><button class="cat-btn team" data-cat="TEAM" type="button">TEAM</button></div><div class="grid" id="appGrid"></div><div class="empty-state" id="emptyState" hidden>표시할 앱이 없습니다.</div></main>
+<footer>AI 바이브앱 HUB — 내 앱을 한눈에</footer>
+<script>
+const ITEMS=${safeJSONStringify(publicItems)};
+const TAB_LABELS={work:'업무',personal:'개인',inprogress:'진행중',lab:'실험실'};
+let activeTab=Object.keys(TAB_LABELS).find(tab=>ITEMS.some(item=>item.tabId===tab))||'work';
+let activeCategory='ALL';
+function esc(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function categoryClass(category){return {DESIGN:'design',QUALITY:'quality',PROCESS:'process',EXPAND:'expand',TEAM:'team'}[category]||'';}
+function getItems(){return ITEMS.filter(item=>activeCategory==='ALL'||item.category===activeCategory).map((item,index)=>({item,index})).sort((a,b)=>Number(a.item.order)-Number(b.item.order)||a.index-b.index).map(({item})=>item);}
+function render(){const items=getItems();document.querySelectorAll('.cat-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.cat===activeCategory));const grid=document.getElementById('appGrid');grid.innerHTML=items.map(item=>{const thumb=item.thumbnail?'<img src="'+esc(item.thumbnail)+'" alt="'+esc(item.title)+' 썸네일" loading="lazy" />':'<span>Portfolio thumbnail</span>';return '<article class="app-card" data-url="'+esc(item.url)+'" tabindex="0" role="link" aria-label="'+esc(item.title)+' 열기"><div class="project-thumb">'+thumb+'</div><div class="card-top"><span class="badge '+categoryClass(item.category)+'">'+esc(item.category)+'</span></div><div class="card-title">'+esc(item.title)+'</div>'+(item.description?'<div class="card-desc">'+esc(item.description)+'</div>':'')+'</article>';}).join('');const empty=document.getElementById('emptyState');empty.hidden=items.length>0;document.querySelectorAll('.app-card').forEach(card=>{const open=()=>{const url=card.dataset.url;if(url&&url!=='#')window.open(url,'_blank','noopener,noreferrer');};card.addEventListener('click',open);card.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open();}});});}
+document.getElementById('catBar').addEventListener('click',event=>{const button=event.target.closest('.cat-btn');if(!button)return;activeCategory=button.dataset.cat;render();});
+render();
+<\/script>
+</body>
+</html>`;
+}
+
+function catClass(cat) { return {DESIGN:'design',QUALITY:'quality',PROCESS:'process',EXPAND:'expand',TEAM:'team'}[cat]||''; }
+function badgeHTML(cat) { return `<span class="badge ${catClass(cat)}">${cat}</span>`; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function thumbHTML(item) { return `<div class="project-thumb">${item.thumbnail ? `<img src="${esc(item.thumbnail)}" alt="${esc(item.title)} 썸네일" loading="lazy" />` : '<span>Portfolio thumbnail</span>'}</div>`; }
+
+const SVG = {
+  cpu:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`,
+  pencil:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  move:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`,
+  plus:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  grip:`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>`,
+  link:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+};
+
+function getTabItems(_tabId, category) {
+  // 탭 메뉴는 숨겼지만 JSON의 업무·개인·진행중·실험실 항목은 모두 한 보드에 표시한다.
+  return state.items
+    .filter(i => category==='ALL'||i.category===category)
+    .map((item,index)=>({item,index}))
+    .sort((a,b)=>{
+      const aOrder=Number.isFinite(Number(a.item.order)) ? Number(a.item.order) : Number.MAX_SAFE_INTEGER;
+      const bOrder=Number.isFinite(Number(b.item.order)) ? Number(b.item.order) : Number.MAX_SAFE_INTEGER;
+      return aOrder-bOrder || a.index-b.index;
+    })
+    .map(({item})=>item);
+}
+
+function renderGrid() {
+  const grid = document.getElementById('appGrid');
+  document.getElementById('emptyState')?.remove();
+  const items = getTabItems(state.activeTab, state.activeCategory);
+  const moveTargets = MOVE_TARGETS[state.activeTab];
+
+  let html = '';
+  items.forEach(item => {
+    const hasSpec = !!state.specs[item.id];
+    const isOpen = state.openMoveId === item.id;
+    const isDemo = !!item.demo;
+    const moveMenu = moveTargets ? `
+      <div class="move-wrap" data-action>
+        <button class="card-action-btn move-btn" data-action="move" data-id="${item.id}" title="탭 이동">${SVG.move}</button>
+        ${isOpen ? `<div class="move-menu" id="moveMenu-${item.id}" data-action>
+          <div class="move-menu-title">탭 이동</div>
+          ${moveTargets.map(t=>`<button class="move-menu-item" data-action="do-move" data-id="${item.id}" data-target="${t}">${TAB_LABELS[t]}</button>`).join('')}
+        </div>` : ''}
+      </div>` : '';
+
+    html += `
+      <div class="app-card" data-id="${item.id}" draggable="${!isDemo}">
+        ${thumbHTML(item)}
+        <div class="card-top">
+          ${badgeHTML(item.category)}
+          ${isDemo ? '<span class="preview-chip">LAYOUT STUDY</span>' : `<div class="card-actions">
+            <button class="card-action-btn spec-btn ${hasSpec?'has-spec':''}" data-action="spec" data-id="${item.id}" title="기술 스펙">${SVG.cpu}</button>
+            <button class="card-action-btn" data-action="edit" data-id="${item.id}" title="카드 편집 및 썸네일">${SVG.pencil}</button>
+            ${moveMenu}
+            <button class="card-action-btn del-btn" data-action="delete" data-id="${item.id}" title="삭제">${SVG.trash}</button>
+          </div>`}
+        </div>
+        <div class="card-title">${esc(item.title)}</div>
+        ${item.description?`<div class="card-desc">${esc(item.description)}</div>`:''}
+        ${hasSpec?'<div class="spec-dot" title="기술스펙 등록됨"></div>':''}
+        <div class="drag-hint">${SVG.grip}</div>
+      </div>`;
+  });
+  if (!isLayoutStudy) html += `<button class="add-card" id="addCardBtn">${SVG.plus}</button>`;
+  grid.innerHTML = html;
+
+  if (!isLayoutStudy && items.length===0 && state.activeCategory!=='ALL') {
+    const div = document.createElement('div');
+    div.className='empty-state'; div.id='emptyState';
+    div.innerHTML=`${badgeHTML(state.activeCategory)} 카테고리에 등록된 앱이 없습니다.`;
+    grid.after(div);
+  }
+  bindCardEvents(); bindDragEvents();
+}
+
+function bindCardEvents() {
+  document.querySelectorAll('.app-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('[data-action]')) return;
+      const item = state.items.find(i=>i.id===card.dataset.id);
+      if (item) window.open(item.url,'_blank','noopener,noreferrer');
+    });
+  });
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const { action, id, target } = btn.dataset;
+      if (action==='spec')    openSpecModal(id);
+      if (action==='edit')    openEditModal(id);
+      if (action==='delete')  openDeleteModal(id);
+      if (action==='move')    { state.openMoveId = state.openMoveId===id ? null : id; renderGrid(); }
+      if (action==='do-move') { moveItem(id, target); }
+    });
+  });
+  document.getElementById('addCardBtn')?.addEventListener('click', openAddModal);
+
+  // 외부 클릭 시 이동 메뉴 닫기
+  document.addEventListener('click', closeMoveMenuOnOutside, { once: true });
+}
+
+function closeMoveMenuOnOutside(e) {
+  if (state.openMoveId && !e.target.closest('[data-action]')) {
+    state.openMoveId = null; renderGrid();
+  }
+}
+
+function moveItem(id, targetTab) {
+  const item = state.items.find(i=>i.id===id);
+  if (!item) return;
+  const targetCount = state.items.filter(i=>i.tabId===targetTab).length;
+  state.items = state.items.map(i => i.id===id ? {...i, tabId:targetTab, order:targetCount} : i);
+  state.openMoveId = null;
+  persist(); renderGrid();
+  showToast(`"${item.title}" → ${TAB_LABELS[targetTab]} 탭으로 이동했습니다.`);
+}
+
+// ── Drag & Drop ────────────────────────────────────────────
+function bindDragEvents() {
+  document.querySelectorAll('.app-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      state.draggingId = card.dataset.id;
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+      setTimeout(()=>card.classList.add('dragging'),0);
+    });
+    card.addEventListener('dragend', ()=>{ state.draggingId=null; card.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over')); });
+    card.addEventListener('dragover', e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over')); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', ()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop', e=>{
+      e.preventDefault(); card.classList.remove('drag-over');
+      const src=e.dataTransfer.getData('text/plain'), tgt=card.dataset.id;
+      if (!src||src===tgt) return;
+      const all=getTabItems(state.activeTab,'ALL'), ids=all.map(i=>i.id);
+      const fi=ids.indexOf(src), ti=ids.indexOf(tgt);
+      if (fi<0||ti<0) return;
+      ids.splice(fi,1); ids.splice(ti,0,src);
+      state.items=state.items.map(item=>{ if(item.tabId!==state.activeTab) return item; const no=ids.indexOf(item.id); return no>=0?{...item,order:no}:item; });
+      persist(); renderGrid();
+    });
+  });
+}
+
+// ── Category ────────────────────────────────────────────────
+// 탭 메뉴는 요청에 따라 제거했으며, 카테고리 필터는 기존 기능을 유지한다.
+document.getElementById('catBar').addEventListener('click', e=>{
+  const btn=e.target.closest('.cat-btn'); if(!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  state.activeCategory=btn.dataset.cat; renderGrid();
+});
+
+// ── JSON Export / Import ───────────────────────────────────
+// 내보내기: 전체 탭 items + specs 포함 (어느 탭에서 실행해도 동일)
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const data = { items: state.items, specs: state.specs };
+  downloadTextFile(`vibapp-hub-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(data,null,2), 'application/json');
+  // 탭별 카드 수 요약
+  const summary = ['work','personal','inprogress','lab']
+    .map(t=>{ const c=state.items.filter(i=>i.tabId===t).length; return c>0?`${TAB_LABELS[t]}:${c}개`:null; })
+    .filter(Boolean).join(' / ');
+  showToast(`전체 내보내기 완료 — ${summary}`);
+});
+
+document.getElementById('publicExportBtn').addEventListener('click', ()=>{
+  if (!state.items.length) return showToast('먼저 JSON을 불러오거나 앱을 등록해 주세요.', true);
+  downloadTextFile(`ai-vibapp-hub-public-editorial-${new Date().toISOString().slice(0,10)}.html`, buildPublicHTML(), 'text/html;charset=utf-8');
+  showToast(`공개용 HTML 생성 완료 — ${state.items.length}개 앱`);
+});
+
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try {
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data.items)) throw new Error('invalid');
+      state.items=normalizeItems(data.items);
+      state.specs=(data.specs&&typeof data.specs==='object')?data.specs:{};
+      selectFirstPopulatedTab(); persist(); renderGrid();
+      const summary=['work','personal','inprogress','lab']
+        .map(t=>{ const c=state.items.filter(i=>i.tabId===t).length; return c>0?`${TAB_LABELS[t]}:${c}개`:null; })
+        .filter(Boolean).join(' / ');
+      showToast(`불러오기 완료 — ${summary}`);
+    } catch { showToast('파일 형식이 올바르지 않습니다.',true); }
+  };
+  reader.readAsText(file); e.target.value='';
+});
+
+// ── Form Modal ─────────────────────────────────────────────
+function setThumbnailValue(src='', status='등록하지 않으면 기본 플레이스홀더가 표시됩니다.', warning=false) {
+  state.pendingThumbnail=src;
+  const zone=document.getElementById('thumbDropZone');
+  const preview=document.getElementById('thumbPreview');
+  const remove=document.getElementById('thumbRemoveBtn');
+  const text=document.getElementById('thumbStatus');
+  preview.hidden=!src;
+  if(src) preview.src=src;
+  zone.classList.toggle('has-image',!!src);
+  remove.hidden=!src;
+  text.textContent=status;
+  text.classList.toggle('is-warning',warning);
+}
+
+function registerThumbnailFile(file) {
+  if(!file) return;
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)) { showToast('JPG, PNG, WebP 이미지만 등록할 수 있습니다.', true); return; }
+  if(file.size > 2 * 1024 * 1024) { showToast('썸네일은 2MB 이하 파일만 등록할 수 있습니다.', true); return; }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const src=reader.result;
+    const probe=new Image();
+    probe.onload=()=>{
+      if(probe.naturalWidth <= probe.naturalHeight) { showToast('세로형 이미지는 사용할 수 없습니다. 가로형 이미지를 선택해 주세요.', true); return; }
+      const ratio=probe.naturalWidth/probe.naturalHeight;
+      const isNear16by9=Math.abs(ratio-(16/9)) < 0.12;
+      setThumbnailValue(src, isNear16by9 ? `${probe.naturalWidth} × ${probe.naturalHeight}px · 16:9 가로형 확인` : `${probe.naturalWidth} × ${probe.naturalHeight}px · 가로형 이미지를 등록했습니다. 16:9를 권장합니다.`, !isNear16by9);
+    };
+    probe.onerror=()=>showToast('이미지를 읽을 수 없습니다. 다른 파일을 선택해 주세요.', true);
+    probe.src=src;
+  };
+  reader.readAsDataURL(file);
+}
+
+const thumbDropZone=document.getElementById('thumbDropZone');
+const thumbFileInput=document.getElementById('fThumbFile');
+thumbDropZone.addEventListener('dblclick',()=>thumbFileInput.click());
+thumbDropZone.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); thumbFileInput.click(); } });
+thumbDropZone.addEventListener('dragover',e=>{ e.preventDefault(); thumbDropZone.classList.add('is-dragging'); });
+thumbDropZone.addEventListener('dragleave',()=>thumbDropZone.classList.remove('is-dragging'));
+thumbDropZone.addEventListener('drop',e=>{ e.preventDefault(); thumbDropZone.classList.remove('is-dragging'); registerThumbnailFile(e.dataTransfer.files?.[0]); });
+thumbFileInput.addEventListener('change',e=>{ registerThumbnailFile(e.target.files?.[0]); e.target.value=''; });
+document.getElementById('thumbRemoveBtn').addEventListener('click',()=>setThumbnailValue('', '썸네일을 제거했습니다. 등록하지 않으면 기본 플레이스홀더가 표시됩니다.'));
+
+function openAddModal() {
+  state.formMode='add'; state.formEditId=null;
+  document.getElementById('formModalTitle').textContent='새 앱 등록';
+  ['fTitle','fUrl','fDesc'].forEach(id=>document.getElementById(id).value='');
+  setThumbnailValue();
+  document.getElementById('fCat').value='DESIGN';
+  document.getElementById('formSubmitBtn').textContent='등록';
+  document.getElementById('formOverlay').style.display='flex';
+  document.getElementById('fTitle').focus();
+}
+function openEditModal(id) {
+  const item=state.items.find(i=>i.id===id); if(!item) return;
+  state.formMode='edit'; state.formEditId=id;
+  document.getElementById('formModalTitle').textContent='카드 편집';
+  document.getElementById('fTitle').value=item.title;
+  document.getElementById('fUrl').value=item.url;
+  document.getElementById('fDesc').value=item.description;
+  setThumbnailValue(item.thumbnail||'', item.thumbnail ? '현재 등록된 썸네일입니다. 더블클릭하거나 파일을 끌어놓아 교체할 수 있습니다.' : '등록하지 않으면 기본 플레이스홀더가 표시됩니다.');
+  document.getElementById('fCat').value=item.category;
+  document.getElementById('formSubmitBtn').textContent='수정 완료';
+  document.getElementById('formOverlay').style.display='flex';
+  document.getElementById('fTitle').focus();
+}
+function closeFormModal() { document.getElementById('formOverlay').style.display='none'; }
+document.getElementById('formCancelBtn').addEventListener('click',closeFormModal);
+document.getElementById('formOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('formOverlay')) closeFormModal(); });
+document.getElementById('formSubmitBtn').addEventListener('click',()=>{
+  const title=document.getElementById('fTitle').value.trim();
+  const url=document.getElementById('fUrl').value.trim();
+  const desc=document.getElementById('fDesc').value.trim();
+  const thumbnail=state.pendingThumbnail;
+  const cat=document.getElementById('fCat').value;
+  if(!title||!url) return;
+  const fullUrl=url.startsWith('http')?url:'https://'+url;
+  if(state.formMode==='add') {
+    const cnt=state.items.filter(i=>i.tabId===state.activeTab).length;
+    state.items.push({id:nanoid(),title,url:fullUrl,description:desc,thumbnail,category:cat,tabId:state.activeTab,order:cnt,createdAt:Date.now()});
+  } else {
+    state.items=state.items.map(i=>i.id===state.formEditId?{...i,title,url:fullUrl,description:desc,thumbnail,category:cat}:i);
+  }
+  persist(); closeFormModal(); renderGrid();
+});
+
+// ── Spec Modal ─────────────────────────────────────────────
+function openSpecModal(id) {
+  const item=state.items.find(i=>i.id===id); if(!item) return;
+  state.specAppId=id; state.specDeleteConfirm=false;
+  const ex=state.specs[id]; state.specHasExisting=!!ex;
+  document.getElementById('specModalTitle').innerHTML=
+    `기술 스펙 <span style="color:var(--text-muted);font-weight:400">—</span> <span style="font-family:'Space Grotesk','Noto Sans KR',sans-serif;font-weight:700">${esc(item.title)}</span> ${badgeHTML(item.category)}`;
+  document.getElementById('specAppMeta').innerHTML=`
+    <div><div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">앱 타이틀</div>
+    <div class="meta-title">${esc(item.title)}</div></div>
+    <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${SVG.link}</a>`;
+  document.getElementById('sPurpose').value=ex?.purpose||'';
+  document.getElementById('sFeatures').value=ex?.features||'';
+  document.getElementById('sDeploy').value=ex?.deploy||'';
+  document.getElementById('sServer').value=ex?.server||'';
+  document.getElementById('sDb').value=ex?.db||'';
+  document.getElementById('sCost').value=ex?.cost||'';
+  document.getElementById('specSaveBtn').lastChild.textContent=ex?' 수정 저장':' 저장';
+  renderSpecDeleteArea();
+  document.getElementById('specOverlay').style.display='flex';
+}
+function renderSpecDeleteArea() {
+  const area=document.getElementById('specDeleteArea');
+  if(!state.specHasExisting){area.innerHTML='';return;}
+  if(state.specDeleteConfirm){
+    area.innerHTML=`<span style="font-size:12px;color:#dc2626;font-weight:600;margin-right:6px">정말 삭제할까요?</span>
+      <button class="btn btn-danger" style="font-size:12px;padding:4px 10px" id="sdcBtn">삭제</button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" id="sdxBtn">취소</button>`;
+    document.getElementById('sdcBtn').onclick=()=>{ delete state.specs[state.specAppId]; persist(); closeSpecModal(); renderGrid(); };
+    document.getElementById('sdxBtn').onclick=()=>{ state.specDeleteConfirm=false; renderSpecDeleteArea(); };
+  } else {
+    area.innerHTML=`<button class="btn btn-ghost-danger" id="sdBtn">🗑 스펙 삭제</button>`;
+    document.getElementById('sdBtn').onclick=()=>{ state.specDeleteConfirm=true; renderSpecDeleteArea(); };
+  }
+}
+function closeSpecModal(){document.getElementById('specOverlay').style.display='none';state.specAppId=null;}
+document.getElementById('specCancelBtn').addEventListener('click',closeSpecModal);
+document.getElementById('specOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('specOverlay'))closeSpecModal();});
+document.getElementById('specSaveBtn').addEventListener('click',()=>{
+  if(!state.specAppId) return;
+  const data={purpose:document.getElementById('sPurpose').value.trim(),features:document.getElementById('sFeatures').value.trim(),deploy:document.getElementById('sDeploy').value.trim(),server:document.getElementById('sServer').value.trim(),db:document.getElementById('sDb').value.trim(),cost:document.getElementById('sCost').value.trim()};
+  if(Object.values(data).every(v=>!v)) return;
+  state.specs[state.specAppId]={appId:state.specAppId,...data,updatedAt:Date.now()};
+  persist(); closeSpecModal(); renderGrid();
+});
+
+// ── Delete Modal ───────────────────────────────────────────
+function openDeleteModal(id){
+  const item=state.items.find(i=>i.id===id); if(!item) return;
+  state.deleteTargetId=id;
+  document.getElementById('deleteDesc').innerHTML=`<strong>${esc(item.title)}</strong>을(를) 삭제하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.`;
+  document.getElementById('deleteOverlay').style.display='flex';
+}
+function closeDeleteModal(){document.getElementById('deleteOverlay').style.display='none';state.deleteTargetId=null;}
+document.getElementById('deleteCancelBtn').addEventListener('click',closeDeleteModal);
+document.getElementById('deleteOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('deleteOverlay'))closeDeleteModal();});
+document.getElementById('deleteConfirmBtn').addEventListener('click',()=>{
+  if(!state.deleteTargetId) return;
+  state.items=state.items.filter(i=>i.id!==state.deleteTargetId);
+  persist(); closeDeleteModal(); renderGrid();
+});
+
+// ── ESC ────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  if(document.getElementById('formOverlay').style.display!=='none') closeFormModal();
+  if(document.getElementById('specOverlay').style.display!=='none') closeSpecModal();
+  if(document.getElementById('deleteOverlay').style.display!=='none') closeDeleteModal();
+});
+
+renderGrid();
+</script>
+</body>
+</html>
