@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <meta name="description" content="AI 바이브앱 HUB 포트폴리오" />
-<title>AI 바이브앱 HUB</title>
+<title>Production Tools for NewsDesign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -36,6 +36,9 @@ header { position:sticky; top:0; z-index:20; background:rgba(253,252,249,.92); b
 .header-inner { max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; gap:10px; height:52px; }
 .logo-box { width:28px; height:28px; border-radius:8px; background:#1c1c1e; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .site-title { font-family:'Space Grotesk','Noto Sans KR',sans-serif; font-weight:700; font-size:17px; letter-spacing:-.3px; }
+.site-subtitle { font-family:'Space Grotesk','Noto Sans KR',sans-serif; font-weight:500; font-size:13px; color:var(--text-muted); padding-left:10px; border-left:1px solid var(--border); line-height:1.2; white-space:nowrap; }
+.title-group { display:flex; align-items:center; gap:10px; min-width:0; }
+@media (max-width:480px) { .title-group { flex-direction:column; align-items:flex-start; gap:1px; } .site-title { font-size:15px; line-height:1.2; } .site-subtitle { font-size:11px; padding-left:0; border-left:0; } }
 .header-spacer { flex:1; }
 .public-export-btn { display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:0 11px; border:1px solid #1c1c1e; border-radius:8px; background:#1c1c1e; color:#fff; font:700 11px 'Noto Sans KR',sans-serif; letter-spacing:.01em; cursor:pointer; transition:transform .12s,background .12s; }
 .public-export-btn:hover { background:#373737; }
@@ -203,7 +206,7 @@ body.public-mode .app-card:focus-visible { outline:3px solid #1c1c1e; outline-of
 </style>
 </head>
 <body class="layout-preview layout-editorial public-mode">
-<header><div class="header-inner"><div class="logo-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><span class="site-title">AI 바이브앱 HUB</span></div></header>
+<header><div class="header-inner"><div class="logo-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><div class="title-group"><span class="site-title">Production Tools for NewsDesign</span><span class="site-subtitle">Newroom Toolkit</span></div></div></header>
 <div class="tab-nav-wrap"><div class="editorial-message" aria-label="바이브앱 HUB 소개"><strong>데일리 뉴스 인포그래픽 제작 과정을 도구로 다시 짰습니다</strong><span>기획·설계·개발·배포·교육까지 직접, 뉴스디자인팀 23명이 씁니다</span></div></div>
 <main><div class="cat-bar" id="catBar"><span class="cat-label">CATEGORY</span><button class="cat-btn all active" data-cat="ALL" type="button">ALL</button><button class="cat-btn design" data-cat="DESIGN" type="button">DESIGN</button><button class="cat-btn quality" data-cat="QUALITY" type="button">QUALITY</button><button class="cat-btn process" data-cat="PROCESS" type="button">PROCESS</button><button class="cat-btn expand" data-cat="EXPAND" type="button">EXPAND</button><button class="cat-btn team" data-cat="TEAM" type="button">TEAM</button></div><div class="grid" id="appGrid"></div><div class="empty-state" id="emptyState" hidden>표시할 앱이 없습니다.</div></main>
 <footer>AI 바이브앱 HUB — 내 앱을 한눈에</footer>
